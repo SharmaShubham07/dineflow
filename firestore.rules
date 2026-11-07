@@ -1,0 +1,82 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function isSuperAdmin() {
+      return isSignedIn() && getUserData().role == 'superadmin';
+    }
+
+    function isAdminOf(cafeId) {
+      return isSignedIn() && (
+        getUserData().role == 'superadmin' || 
+        (getUserData().role == 'admin' && getUserData().cafeId == cafeId)
+      );
+    }
+
+    // User profiles
+    match /users/{uid} {
+      allow read: if isSignedIn() && (request.auth.uid == uid || isSuperAdmin());
+      allow write: if isSuperAdmin();
+    }
+
+    // Cafes
+    match /cafes/{cafeId} {
+      allow read: if isSuperAdmin() || isAdminOf(cafeId);
+      allow write: if isSuperAdmin();
+
+      // Floors
+      match /floors/{floorId} {
+        allow read: if isSuperAdmin() || isAdminOf(cafeId);
+        allow write: if isSuperAdmin();
+      }
+
+      // Tables (Customers can read by QR token)
+      match /tables/{tableId} {
+        allow read: if true;
+        allow write: if isSuperAdmin();
+      }
+
+      // Menu Categories
+      match /categories/{categoryId} {
+        allow read: if true;
+        allow write: if isAdminOf(cafeId);
+      }
+
+      // Menu Items
+      match /items/{itemId} {
+        allow read: if true;
+        allow write: if isAdminOf(cafeId);
+      }
+
+      // Customer Sessions
+      match /sessions/{sessionId} {
+        allow read: if isSuperAdmin() || isAdminOf(cafeId);
+        allow create: if true;
+        allow update: if isSuperAdmin() || isAdminOf(cafeId);
+      }
+
+      // Orders
+      match /orders/{orderId} {
+        allow read: if isSuperAdmin() || isAdminOf(cafeId);
+        allow create: if true; // Validated via order creation logic
+        allow update, delete: if isAdminOf(cafeId);
+      }
+
+      // Audit Log
+      match /auditLog/{logId} {
+        allow read: if isSuperAdmin();
+        allow create: if isSignedIn();
+      }
+    }
+  }
+}
+

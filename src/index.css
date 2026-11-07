@@ -1,0 +1,101 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --bg-primary: 250 248 245;
+    --bg-secondary: 243 240 235;
+    --bg-tertiary: 235 231 224;
+
+    --text-primary: 28 25 23;
+    --text-secondary: 87 83 78;
+    --text-muted: 140 135 128;
+
+    --color-accent: 194 99 42;
+    --color-accent-hover: 174 85 32;
+
+    --glass-bg: rgba(255, 255, 255, 0.65);
+    --glass-border: rgba(255, 255, 255, 0.45);
+    --glass-highlight: rgba(255, 255, 255, 0.7);
+    --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.06);
+    --glass-blur: 14px;
+  }
+
+  .dark {
+    --bg-primary: 28 25 23;
+    --bg-secondary: 41 37 36;
+    --bg-tertiary: 55 50 46;
+
+    --text-primary: 245 243 240;
+    --text-secondary: 200 196 190;
+    --text-muted: 140 135 128;
+
+    --color-accent: 224 117 56;
+    --color-accent-hover: 240 135 75;
+
+    --glass-bg: rgba(41, 37, 36, 0.65);
+    --glass-border: rgba(255, 255, 255, 0.08);
+    --glass-highlight: rgba(255, 255, 255, 0.12);
+    --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+    --glass-blur: 14px;
+  }
+
+  /* Lite Mode: disables heavy backdrops and blurs for low-end devices */
+  .lite-mode {
+    --glass-bg: rgba(255, 255, 255, 0.96) !important;
+    --glass-border: rgba(214, 211, 209, 0.8) !important;
+    --glass-highlight: transparent !important;
+    --glass-blur: 0px !important;
+    --glass-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.06) !important;
+  }
+
+  .dark.lite-mode {
+    --glass-bg: rgba(41, 37, 36, 0.96) !important;
+    --glass-border: rgba(68, 64, 60, 0.8) !important;
+    --glass-highlight: transparent !important;
+    --glass-blur: 0px !important;
+    --glass-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.25) !important;
+  }
+}
+
+/* Reduced motion compliance */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Glass card utility */
+.glass-surface {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  position: relative;
+}
+
+@supports (backdrop-filter: blur(1px)) {
+  :not(.lite-mode) .glass-surface {
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+  }
+}
+
+.glass-surface::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--glass-highlight);
+  border-top-left-radius: inherit;
+  border-top-right-radius: inherit;
+  pointer-events: none;
+}
+
